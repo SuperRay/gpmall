@@ -8,14 +8,14 @@ import com.gpmall.commons.result.ResponseData;
 import com.gpmall.commons.result.ResponseUtil;
 import com.gpmall.user.IAddressService;
 import com.gpmall.user.constants.SysRetCodeConstants;
+import com.gpmall.user.dto.AddAddressRequest;
+import com.gpmall.user.dto.AddAddressResponse;
 import com.gpmall.user.dto.AddressListRequest;
 import com.gpmall.user.dto.AddressListResponse;
 import com.gpmall.user.intercepter.TokenIntercepter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.Reference;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,4 +50,20 @@ public class AddressController {
         }
         return new ResponseUtil().setErrorMsg(response.getMsg());
     }
+
+    @PostMapping("/addAddress")
+    public ResponseData addAddress(@RequestBody AddAddressRequest addAddressRequest, HttpServletRequest request)
+    {
+        String userInfo=(String)request.getAttribute(TokenIntercepter.USER_INFO_KEY);
+        JSONObject object= JSON.parseObject(userInfo);
+        Long uid=Long.parseLong(object.get("uid").toString());
+        addAddressRequest.setUserId(uid);
+
+        AddAddressResponse response = addressService.createAddress(addAddressRequest);
+        if(response.getCode().equals(SysRetCodeConstants.SUCCESS.getCode())){
+            return new ResponseUtil().setData(response.getCode());
+        }
+        return new ResponseUtil().setErrorMsg(response.getMsg());
+    }
+
 }
